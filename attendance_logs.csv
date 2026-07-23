@@ -1,0 +1,6 @@
+EmployeeID,Name,Nationality,BasicSalary,Housing,ShiftStart,ShiftEnd,CheckIn,CheckOut,SickDays,CashSales,TamweelSales
+101,Ahmed,Saudi,4000,1000,08:00,17:00,08:45,17:00,35,2,1
+102,John,Expat,5000,1500,08:00,17:00,08:00,17:00,2,0,4
+103,Sara,Saudi,6000,1500,08:00,17:00,08:10,17:00,0,3,2
+104,Fahad,Saudi,3500,1000,08:00,17:00,10:00,17:00,0,1,0
+105,Mike,Expat,8000,2000,08:00,17:00,08:30,17:00,0,5,5

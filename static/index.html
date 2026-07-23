@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balubied Payroll Agent - وكيل بالبيد لإدارة الرواتب</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="decor-glow-1"></div>
+    <div class="decor-glow-2"></div>
+    
+    <div class="container">
+        <!-- Sidebar Navigation & Guide -->
+        <aside class="sidebar">
+            <div class="logo-wrapper">
+                <img src="logo.png" alt="Balubaid Group Logo" class="balubaid-logo">
+                <span class="sub-logo">إدارة الرواتب والبصمة</span>
+            </div>
+            
+            <!-- Timeline Process -->
+            <div class="guide-panel">
+                <h3>🛠️ مسار المعالجة التلقائية</h3>
+                <div class="steps-flow">
+                    <div class="step-card active" id="step-1-card">
+                        <div class="step-num">1</div>
+                        <div class="step-desc">
+                            <strong>استيراد سجل البصمة</strong>
+                            <span>رفع البيانات أو تعديلها يدوياً.</span>
+                        </div>
+                    </div>
+                    <div class="step-card" id="step-2-card">
+                        <div class="step-num">2</div>
+                        <div class="step-desc">
+                            <strong>المعالجة والاحتساب</strong>
+                            <span>حساب ساعات التأخير، المرضي، والعمولات.</span>
+                        </div>
+                    </div>
+                    <div class="step-card" id="step-3-card">
+                        <div class="step-num">3</div>
+                        <div class="step-desc">
+                            <strong>التدقيق والاعتماد</strong>
+                            <span>المطابقة القانونية عبر الوكيل "سند".</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-credit">
+                منصة تدقيق الرواتب المستقلة © 2026
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Workspace -->
+        <main class="main-content">
+            <!-- Header Banner -->
+            <header class="content-header">
+                <div class="header-main">
+                    <h1>Balubied Payroll Agent — وكيل بالبيد للرواتب والتدقيق</h1>
+                    <p>معالجة تلقائية بالكامل لسجلات البصمة ومطابقة الرواتب والعمولات متوافقة مع التأمينات الاجتماعية ونظام العمل السعودي.</p>
+                </div>
+            </header>
+
+            <!-- Smart KPI Panels -->
+            <section class="kpi-section">
+                <div class="kpi-card">
+                    <div class="kpi-icon gold">💰</div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">إجمالي الأجور المستحقة</span>
+                        <strong class="kpi-value" id="kpi-gross-pay">0.00 ر.س</strong>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon blue">🛡️</div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">استقطاع التأمينات (GOSI)</span>
+                        <strong class="kpi-value" id="kpi-gosi">0.00 ر.س</strong>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon red">⏱️</div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">جزاءات التأخير والغياب</span>
+                        <strong class="kpi-value" id="kpi-penalties">0.00 ر.س</strong>
+                    </div>
+                </div>
+                <div class="kpi-card highlight">
+                    <div class="kpi-icon green">💵</div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">صافي الرواتب المصدرة</span>
+                        <strong class="kpi-value" id="kpi-net-pay">0.00 ر.س</strong>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main Interactive Data Cards -->
+            <div class="grid-layout">
+                <!-- Section 1: Raw Input Logs -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2>بيانات سجل البصمة والحضور الفعلي</h2>
+                        <span class="badge">CSV LOG</span>
+                    </div>
+                    <p class="card-subtitle">البيانات الفردية الخام المستخرجة مباشرة من أجهزة الحضور والانصراف.</p>
+                    <textarea id="raw-csv-input" placeholder="يرجى الانتظار لحين تحميل البيانات..."></textarea>
+                    
+                    <div class="control-row">
+                        <label class="custom-file-upload">
+                            <input type="file" id="csv-file-picker" accept=".csv" onchange="handleFileUpload()">
+                            📁 استيراد ملف البصمة
+                        </label>
+                        <button class="btn btn-secondary btn-sm" onclick="restoreDefaultLogs()">🔄 إعادة السجل الافتراضي</button>
+                    </div>
+
+                    <button class="btn btn-primary btn-block" id="process-payroll-btn" onclick="runPayrollCalculation()">
+                        ⚙️ بدء معالجة السجلات وتصدير الكشوف
+                    </button>
+                </div>
+
+                <!-- Section 2: WPS Mudad Final List -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2>مسير الرواتب المعتمد المبدئي (WPS Ready)</h2>
+                        <button class="btn btn-secondary btn-sm" id="download-csv-btn" onclick="downloadCSV()" disabled>
+                            📥 تحميل مسير مدد
+                        </button>
+                    </div>
+                    <p class="card-subtitle">تفاصيل الحسابات النهائية بعد تسوية الخصومات والعمولات.</p>
+                    <div class="table-container">
+                        <table id="payroll-output-table">
+                            <thead>
+                                <tr>
+                                    <th>رقم الموظف</th>
+                                    <th>الاسم</th>
+                                    <th>الجنسية</th>
+                                    <th>الأساسي + السكن</th>
+                                    <th>العمولات المكتسبة</th>
+                                    <th>استقطاع GOSI</th>
+                                    <th>خصم التأخير</th>
+                                    <th>خصم المرضي</th>
+                                    <th>صافي الراتب</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="empty-state">
+                                    <td colspan="9">يرجى الضغط على زر المعالجة لبدء استيراد البيانات الحسابية...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exception Alarm Center & Intelligent Auditor (Double Panel) -->
+            <div class="audit-alerts-grid">
+                <!-- Smart Exception Panel -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2>مركز رصد الانحرافات والتجاوزات الاستثنائية</h2>
+                        <span class="badge badge-warning" id="anomalies-count">0 تنبيهات</span>
+                    </div>
+                    <p class="card-subtitle">تصفية تلقائية للحالات الاستثنائية (تأخير حرج، إجازات مرضية مطولة) لتسهيل مراجعتها.</p>
+                    <div class="alerts-container" id="anomalies-container">
+                        <div class="alert-item empty">لا توجد سجلات حضور معالجة بعد لتصفية الانحرافات.</div>
+                    </div>
+                </div>
+
+                <!-- Auditor Panel -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2>لجنة التدقيق المالي والمطابقة المستقلة (سند)</h2>
+                        <span class="badge badge-success" id="audit-badge">بانتظار التحقق</span>
+                    </div>
+                    <p class="card-subtitle">مطابقة ذكية للبيانات المحسوبة بمدخلات البصمة طبقاً للوائح العمل السعودية.</p>
+                    <div class="audit-box-wrapper">
+                        <button class="btn btn-primary btn-block" id="run-audit-btn" onclick="runAuditCheck()" disabled>
+                            ⚖️ تشغيل المدقق المالي المستقل "سند"
+                        </button>
+                        <div class="audit-result-box" id="audit-result-box">
+                            تقرير المدقق المالي سيظهر هنا بالتفصيل فور تشغيل فحص المطابقة...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
