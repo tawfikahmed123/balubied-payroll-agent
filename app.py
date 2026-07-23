@@ -4,7 +4,7 @@ import io
 import asyncio
 from datetime import datetime
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -16,19 +16,35 @@ app = FastAPI(title="Balubied Payroll Agent")
 
 os.makedirs("static", exist_ok=True)
 
+class ChatRequest(BaseModel):
+    message: str
+
+class EOSGRequest(BaseModel):
+    basic_salary: float
+    housing: float
+    years_of_service: float
+    reason: str  # "resignation" or "termination" or "contract_end"
+
 # Helper calculations
-def calculate_gosi_deduction(base_salary: float, housing_allowance: float, nationality: str) -> float:
+def calculate_gosi_deduction(base_salary: float, housing_allowance: float, nationality: str) -> dict:
     total_subject_to_gosi = base_salary + housing_allowance
     if nationality.lower() == 'saudi':
-        return round(total_subject_to_gosi * 0.0975, 2)
-    return 0.0
+        employee_gosi = round(total_subject_to_gosi * 0.0975, 2)
+        employer_gosi = round(total_subject_to_gosi * 0.1175, 2)
+        return {"employee": employee_gosi, "employer": employer_gosi}
+    else:
+        # Expats: 2% Occupational Hazard (paid by employer)
+        employer_gosi = round(total_subject_to_gosi * 0.02, 2)
+        return {"employee": 0.0, "employer": employer_gosi}
 
 def calculate_late_penalty(minutes_late: int, daily_wage: float) -> float:
     if minutes_late <= 15:
         return 0.0
     elif minutes_late <= 60:
         return round(daily_wage * 0.25, 2)
-    return round(daily_wage * 0.50, 2)
+    elif minutes_late <= 120:
+        return round(daily_wage * 0.50, 2)
+    return round(daily_wage * 1.0, 2)
 
 def calculate_sick_leave_deduction(sick_days: int, daily_wage: float) -> float:
     deduction = 0.0
@@ -53,6 +69,40 @@ def parse_minutes_late(shift_start: str, check_in: str) -> int:
         return max(0, minutes)
     except Exception:
         return 0
+
+def calculate_eosg(basic: float, housing: float, years: float, reason: str) -> dict:
+    total_wage = basic + housing
+    half_month = total_wage / 2.0
+    full_month = total_wage
+
+    # Base EOSG calculation (Article 84)
+    if years <= 5:
+        base_eosg = years * half_month
+    else:
+        base_eosg = (5 * half_month) + ((years - 5) * full_month)
+
+    # Adjustment based on resignation vs termination (Article 85)
+    final_eosg = base_eosg
+    payable_ratio = 1.0
+
+    if reason == "resignation":
+        if years < 2:
+            payable_ratio = 0.0
+        elif years < 5:
+            payable_ratio = 1.0 / 3.0
+        elif years < 10:
+            payable_ratio = 2.0 / 3.0
+        else:
+            payable_ratio = 1.0
+        final_eosg = base_eosg * payable_ratio
+
+    return {
+        "total_wage": round(total_wage, 2),
+        "years": years,
+        "base_eosg": round(base_eosg, 2),
+        "payable_ratio": f"{int(payable_ratio * 100)}%",
+        "final_eosg": round(final_eosg, 2)
+    }
 
 # Shared state to hold latest run data for the Auditor
 latest_run_data = {
@@ -104,17 +154,19 @@ async def process_payroll(
             cash_sales = int(emp.get("CashSales", 0))
             tamweel_sales = int(emp.get("TamweelSales", 0))
 
-            # Auto calculate late minutes from fingerprint times
             minutes_late = parse_minutes_late(shift_start, check_in)
 
             basic_plus_housing = basic + housing
             daily_wage = basic_plus_housing / 30.0
 
             commission = calculate_sales_commission(cash_sales, tamweel_sales)
-            gosi = calculate_gosi_deduction(basic, housing, nationality)
+            gosi_info = calculate_gosi_deduction(basic, housing, nationality)
+            gosi_emp = gosi_info["employee"]
+            gosi_employer = gosi_info["employer"]
+            
             late = calculate_late_penalty(minutes_late, daily_wage)
             sick = calculate_sick_leave_deduction(sick_days, daily_wage)
-            net_pay = (basic_plus_housing + commission) - (gosi + late + sick)
+            net_pay = (basic_plus_housing + commission) - (gosi_emp + late + sick)
 
             results.append({
                 "EmployeeID": emp_id,
@@ -122,7 +174,8 @@ async def process_payroll(
                 "Nationality": nationality,
                 "BasicPlusHousing": f"{basic_plus_housing:.2f}",
                 "Commission": f"{commission:.2f}",
-                "GOSI_Deduction": f"{gosi:.2f}",
+                "GOSI_Deduction": f"{gosi_emp:.2f}",
+                "GOSI_Employer": f"{gosi_employer:.2f}",
                 "Late_Penalty": f"{late:.2f}",
                 "Sick_Deduction": f"{sick:.2f}",
                 "NetPay": f"{net_pay:.2f}"
@@ -131,7 +184,6 @@ async def process_payroll(
             print(f"Error parsing row: {str(e)}")
             continue
 
-    # Write output to wps_mudad_report_with_commission.csv
     if results:
         latest_run_data["output_json"] = results
         output_buffer = io.StringIO()
@@ -160,31 +212,26 @@ async def audit_payroll():
         api_key=api_key,
         model="gemini-2.5-flash",
         system_instructions=(
-            "أنت 'سند'، رئيس لجنة التدقيق والمطابقة المالية المستقل لشركة أوتوزون السعودية (AutoZone KSA). "
-            "مهمتك هي التحقق النهائي من كشوفات الرواتب ومطابقتها قانونياً للتأكد من تطبيق نظام العمل والعمال والتأمينات الاجتماعية بنسبة 100% وبدون أي أخطاء. "
-            "أنت تقوم بمطابقة سجل البصمة الخام والحضور الفردي مع المخرجات المستخلصة. "
-            "تأكد من مطابقة القواعد التالية وصحتها الحسابية لكل موظف:\n"
-            "- استقطاع التأمينات (GOSI) بنسبة 9.75% للسعوديين فقط على (الأساسي + السكن) واستبعاد العمولات.\n"
-            "- احتساب التأخيرات بدقة من أوقات البصمة (ساعة البصمة مقارنة بالبصمة الرسمية).\n"
-            "- احتساب خصومات الإجازات المرضية طبقاً للمادة 117.\n"
-            "اكتب تقريراً رسمياً باللغة العربية يتضمن:\n"
-            "1. حالة التدقيق الكلية (معتمد ومطابق / مرفوض لوجود أخطاء).\n"
-            "2. مراجعة تفصيلية بالأسماء تشرح للوزير أو المدير التنفيذي دقة حسابات كل موظف بناءً على بصمته ومبيعاته."
+            "أنت 'سند'، المستشار والمدقق المالي الذكي المستقل لمجموعة بالبيد (Balubied Group KSA). "
+            "مهمتك هي إجراء فحص قانوني ومطابقة دقيقة لكشوف الرواتب بناءً على نظام العمل والعمال السعودي، لائحة التأمينات الاجتماعية (GOSI)، ونظام حماية الأجور (Mudad).\n"
+            "المتطلبات:\n"
+            "1. مطابقة التأمينات (GOSI 9.75%) على الموظفين السعوديين فقط واستبعاد غير السعوديين من الخصم الفردي.\n"
+            "2. مراجعة الخصومات والتأخيرات طبقاً للمادة 80 ولائحة تنظيم العمل.\n"
+            "3. مراجعة الإجازات المرضية والخصوم المترتبة عليها وفق المادة 117.\n"
+            "اكتب تقريراً رسمياً مفصلاً باللغة العربية بأسلوب استشاري تنفيذي رفيع المستوى."
         )
     )
 
     try:
         async with Agent(config) as agent:
             prompt = f"""
-            الرجاء مراجعة البيانات التالية ومطابقتها وإصدار صك الاعتماد النهائي.
+            يرجى تدقيق ومطابقة سجلات الرواتب التالية ومطابقة الحسابات باللوائح:
             
-            سجل البصمة والحضور الفعلي (المدخلات):
+            مدخلات البصمة:
             {latest_run_data['input_csv']}
             
-            مسير الرواتب المحسوب (المخرجات):
+            مخرجات الكشوف المحسوبة:
             {latest_run_data['output_csv']}
-            
-            قم بإجراء التدقيق وكتابة التقرير النهائي باللغة العربية وبصيغة رسمية واضحة.
             """
             response = await agent.chat(prompt)
             audit_report = await response.text()
@@ -192,12 +239,63 @@ async def audit_payroll():
     except Exception as e:
         return {"audit_report": f"فشل المدقق الذكي في معالجة البيانات بسبب: {str(e)}", "status": "error"}
 
+@app.post("/api/payroll/eosg")
+def compute_eosg(req: EOSGRequest):
+    res = calculate_eosg(req.basic_salary, req.housing, req.years_of_service, req.reason)
+    return {"status": "success", "data": res}
+
+@app.post("/api/payroll/chat")
+async def chat_with_agent(req: ChatRequest):
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return {"reply": "عذراً، مفتاح Gemini API غير متوفر في البيئة.", "status": "error"}
+
+    context_str = f"بيانات الرواتب المعالجة حالياً: {latest_run_data['output_json'] if latest_run_data['output_json'] else 'لا توجد كشوف رواتب معالجة بعد.'}"
+
+    config = LocalAgentConfig(
+        api_key=api_key,
+        model="gemini-2.5-flash",
+        system_instructions=(
+            "أنت 'سند'، الخبير التنفيذي الذكي لإدارة الرواتب والموارد البشرية لمجموعة بالبيد. "
+            "أجب على أسئلة المستخدم باللغة العربية بدقة، مستنداً إلى نظام العمل والعمال السعودي والتأمينات الاجتماعية. "
+            "إليك السياق الحالي لبيانات الرواتب: " + context_str
+        )
+    )
+
+    try:
+        async with Agent(config) as agent:
+            response = await agent.chat(req.message)
+            reply = await response.text()
+            return {"reply": reply, "status": "success"}
+    except Exception as e:
+        return {"reply": f"عذراً، حدث خطأ في التواصل مع الوكيل: {str(e)}", "status": "error"}
+
 @app.get("/api/payroll/download")
 def download_payroll():
     path = "wps_mudad_report_with_commission.csv"
     if os.path.exists(path):
         return FileResponse(path, filename="wps_mudad_report_with_commission.csv", media_type="text/csv")
     raise HTTPException(status_code=404, detail="الملف غير متوفر بعد.")
+
+@app.get("/api/payroll/download-sif")
+def download_sif():
+    if not latest_run_data["output_json"]:
+        raise HTTPException(status_code=404, detail="لا توجد بيانات رواتب لبناء ملف مدد SIF")
+
+    sif_lines = ["RecordType,EmployeeID,EmployeeName,BasicSalary,Housing,OtherAllowance,Deductions,NetSalary,BankIBAN\n"]
+    for emp in latest_run_data["output_json"]:
+        basic_housing = float(emp["BasicPlusHousing"])
+        basic = round(basic_housing * 0.8, 2)
+        housing = round(basic_housing * 0.2, 2)
+        commission = float(emp["Commission"])
+        deductions = float(emp["GOSI_Deduction"]) + float(emp["Late_Penalty"]) + float(emp["Sick_Deduction"])
+        net = float(emp["NetPay"])
+        iban = f"SA{emp['EmployeeID']}000000000000000"
+
+        sif_lines.append(f"ED,{emp['EmployeeID']},{emp['Name']},{basic},{housing},{commission},{deductions},{net},{iban}\n")
+
+    content = "".join(sif_lines)
+    return Response(content=content, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=mudad_wps_salary_file.sif"})
 
 # Serve index and static files
 @app.get("/")

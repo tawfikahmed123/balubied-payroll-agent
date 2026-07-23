@@ -33,43 +33,30 @@
                 </div>
             </div>
 
-            <!-- Timeline Process -->
-            <div class="guide-panel">
-                <h3>🛠️ مسار معالجة الوكيل</h3>
-                <div class="steps-flow">
-                    <div class="step-card active" id="step-1-card">
-                        <div class="step-num">1</div>
-                        <div class="step-desc">
-                            <strong>استيراد ومحاكاة البيانات</strong>
-                            <span>توليد أو رفع بيانات البصمة.</span>
-                        </div>
-                    </div>
-                    <div class="step-card" id="step-2-card">
-                        <div class="step-num">2</div>
-                        <div class="step-desc">
-                            <strong>المعالجة التفاعلية المباشرة</strong>
-                            <span>حساب الرواتب والخصومات لحظياً.</span>
-                        </div>
-                    </div>
-                    <div class="step-card" id="step-3-card">
-                        <div class="step-num">3</div>
-                        <div class="step-desc">
-                            <strong>التدقيق الذكي والاعتماد</strong>
-                            <span>المطابقة القانونية عبر "سند".</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Tab Navigation Menu -->
+            <nav class="sidebar-nav">
+                <button class="nav-tab-btn active" data-tab="tab-simulation" onclick="switchTab('tab-simulation')">
+                    <span class="nav-icon">⚡</span> المحاكاة والمعالجة الحية
+                </button>
+                <button class="nav-tab-btn" data-tab="tab-payroll" onclick="switchTab('tab-payroll')">
+                    <span class="nav-icon">📑</span> مسير الرواتب و (Mudad SIF)
+                </button>
+                <button class="nav-tab-btn" data-tab="tab-eosg" onclick="switchTab('tab-eosg')">
+                    <span class="nav-icon">⚖️</span> حاسبة نهاية الخدمة (EOSG)
+                </button>
+                <button class="nav-tab-btn" data-tab="tab-chat" onclick="switchTab('tab-chat')">
+                    <span class="nav-icon">💬</span> مستشار الرواتب (AI Copilot)
+                </button>
+            </nav>
 
             <!-- Simulation Controls in Sidebar -->
             <div class="simulation-controls-box">
-                <h4>⚡ إعدادات المحاكاة الحية</h4>
+                <h4>⚡ سرعة معالجة المحاكاة</h4>
                 <div class="control-group">
-                    <label>سرعة المعالجة الحية:</label>
                     <select id="sim-speed" class="select-input">
                         <option value="1000">عادية (1 ثانية / موظف)</option>
-                        <option value="500" selected>سريعة (0.5 ثانية / موظف)</option>
-                        <option value="200">فائقة (0.2 ثانية / موظف)</option>
+                        <option value="400" selected>سريعة (0.4 ثانية / موظف)</option>
+                        <option value="150">فائقة (0.15 ثانية / موظف)</option>
                     </select>
                 </div>
                 <button class="btn btn-secondary btn-sm btn-block" onclick="generateSimulatedData()">
@@ -78,7 +65,7 @@
             </div>
             
             <div class="footer-credit">
-                منصة تدقيق الرواتب والذكاء الاصطناعي © 2026
+                منصة الرواتب المستقلة © 2026 مجموعة بالبيد
             </div>
         </aside>
 
@@ -88,27 +75,16 @@
             <header class="content-header">
                 <div class="header-main">
                     <div class="header-title-row">
-                        <h1>Balubied Payroll Agent — وكيل الرواتب والتدقيق اللحظي</h1>
+                        <h1 id="page-title">Balubied Payroll Agent — وكيل الرواتب والتدقيق اللحظي</h1>
                         <span class="live-badge" id="live-indicator">
-                            <span class="pulse-dot green"></span> محاكاة حية
+                            <span class="pulse-dot green"></span> نظام نشط بالكامل
                         </span>
                     </div>
-                    <p>معالجة تفاعلية حية لسجلات البصمة وحساب التأمينات والعمولات والخصومات بمطابقة فورية مع نظام العمل السعودي.</p>
+                    <p>المحاكاة الذاتية الشاملة لإدارة رواتب الموظفين ومطابقة اللوائح السعودية والخصومات والعمولات.</p>
                 </div>
             </header>
 
-            <!-- Simulation Live Progress Bar -->
-            <section class="progress-section" id="progress-section" style="display: none;">
-                <div class="progress-info">
-                    <span id="progress-status">⚡ جاري تشغيل الوكيل الذكي ومقاطعة سجلات الموظفين...</span>
-                    <strong id="progress-percent">0%</strong>
-                </div>
-                <div class="progress-bar-track">
-                    <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%;"></div>
-                </div>
-            </section>
-
-            <!-- Smart KPI Panels -->
+            <!-- Smart KPI Panels (Always Visible) -->
             <section class="kpi-section">
                 <div class="kpi-card">
                     <div class="kpi-icon gold">💰</div>
@@ -140,107 +116,205 @@
                 </div>
             </section>
 
-            <!-- Main Interactive Data Cards Grid -->
-            <div class="grid-layout">
-                <!-- Section 1: CSV Input & Controls -->
-                <div class="glass-card">
-                    <div class="card-header">
-                        <h2>بيانات سجل البصمة والحضور الفعلي</h2>
-                        <span class="badge">CSV LOG</span>
-                    </div>
-                    <p class="card-subtitle">البيانات الفردية الخام المستخرجة من أجهزة الحضور وانصراف الموظفين.</p>
-                    <textarea id="raw-csv-input" placeholder="يرجى الانتظار لحين تحميل البيانات..."></textarea>
-                    
-                    <div class="control-row">
-                        <label class="custom-file-upload">
-                            <input type="file" id="csv-file-picker" accept=".csv" onchange="handleFileUpload()">
-                            📁 استيراد ملف بصمة
-                        </label>
-                        <button class="btn btn-secondary btn-sm" onclick="restoreDefaultLogs()">🔄 السجل الافتراضي</button>
-                    </div>
-
-                    <div class="action-buttons-group">
-                        <button class="btn btn-primary btn-block live-run-btn" id="start-simulation-btn" onclick="runLiveSimulation()">
-                            ▶️ بدء المحاكاة والمعالجة الحية للوكيل الذكي
-                        </button>
-                    </div>
+            <!-- Simulation Live Progress Bar -->
+            <section class="progress-section" id="progress-section" style="display: none;">
+                <div class="progress-info">
+                    <span id="progress-status">⚡ جاري تشغيل الوكيل الذكي ومقاطعة سجلات الموظفين...</span>
+                    <strong id="progress-percent">0%</strong>
                 </div>
-
-                <!-- Section 2: Real-time Live Agent Terminal Logs -->
-                <div class="glass-card agent-terminal-card">
-                    <div class="card-header">
-                        <h2>📟 شاشة تفكير ومعالجة الوكيل الذكي (Live Agent Log)</h2>
-                        <span class="badge badge-warning" id="terminal-status">خامل</span>
-                    </div>
-                    <p class="card-subtitle">بث حي لخطوات التحليل الرياضي والتدقيق القانوني لكل موظف لحظة بلحظة.</p>
-                    <div class="agent-terminal" id="agent-terminal">
-                        <div class="log-line system">[نظام] الوكيل 'سند' جاهز لبدء معالجة الرواتب والتدقيق اللحظي...</div>
-                    </div>
+                <div class="progress-bar-track">
+                    <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%;"></div>
                 </div>
-            </div>
+            </section>
 
-            <!-- WPS Table Ready -->
-            <div class="glass-card">
-                <div class="card-header">
-                    <h2>مسير الرواتب المعتمد اللحظي (WPS Ready)</h2>
-                    <button class="btn btn-secondary btn-sm" id="download-csv-btn" onclick="downloadCSV()" disabled>
-                        📥 تحميل مسير مدد CSV
-                    </button>
-                </div>
-                <p class="card-subtitle">كشف الرواتب التفاعلي — يتم تحديث السجلات لحظياً أثناء معالجة الوكيل الذكي.</p>
-                <div class="table-container">
-                    <table id="payroll-output-table">
-                        <thead>
-                            <tr>
-                                <th>رقم الموظف</th>
-                                <th>الاسم</th>
-                                <th>الجنسية</th>
-                                <th>الأساسي + السكن</th>
-                                <th>العمولات المكتسبة</th>
-                                <th>استقطاع GOSI</th>
-                                <th>خصم التأخير</th>
-                                <th>خصم المرضي</th>
-                                <th>صافي الراتب</th>
-                                <th>الحالة</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="empty-state">
-                                <td colspan="10">يرجى الضغط على زر بدء المحاكاة والمعالجة الحية لبدء تدفق الموظفين...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Exception Alarm Center & Intelligent Auditor (Double Panel) -->
-            <div class="audit-alerts-grid">
-                <!-- Smart Exception Panel -->
-                <div class="glass-card">
-                    <div class="card-header">
-                        <h2>مركز رصد الانحرافات والتجاوزات الاستثنائية</h2>
-                        <span class="badge badge-warning" id="anomalies-count">0 تنبيهات</span>
-                    </div>
-                    <p class="card-subtitle">تصفية تلقائية للحالات الاستثنائية (تأخير حرج، إجازات مرضية مطولة) لتسهيل مراجعتها.</p>
-                    <div class="alerts-container" id="anomalies-container">
-                        <div class="alert-item empty">لا توجد سجلات حضور معالجة بعد لتصفية الانحرافات.</div>
-                    </div>
-                </div>
-
-                <!-- Auditor Panel -->
-                <div class="glass-card">
-                    <div class="card-header">
-                        <h2>لجنة التدقيق المالي والمطابقة المستقلة (سند)</h2>
-                        <span class="badge badge-success" id="audit-badge">بانتظار التحقق</span>
-                    </div>
-                    <p class="card-subtitle">مطابقة ذكية للبيانات المحسوبة بمدخلات البصمة طبقاً للوائح العمل السعودية عبر Gemini.</p>
-                    <div class="audit-box-wrapper">
-                        <button class="btn btn-primary btn-block" id="run-audit-btn" onclick="runAuditCheck()" disabled>
-                            ⚖️ تشغيل صك الاعتماد النهائي للمدقق "سند"
-                        </button>
-                        <div class="audit-result-box" id="audit-result-box">
-                            تقرير المدقق المالي سيظهر هنا بالتفصيل فور تشغيل فحص المطابقة...
+            <!-- TAB 1: Simulation & Live Operations -->
+            <div class="tab-content active" id="tab-simulation">
+                <div class="grid-layout">
+                    <!-- Section 1: CSV Input & Controls -->
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <h2>بيانات سجل البصمة والحضور الفعلي</h2>
+                            <span class="badge">CSV LOG</span>
                         </div>
+                        <p class="card-subtitle">سجل الحضور اليومي للموظفين المستخرج من أجهزة البصمة والدوام.</p>
+                        <textarea id="raw-csv-input" placeholder="يرجى الانتظار لحين تحميل البيانات..."></textarea>
+                        
+                        <div class="control-row">
+                            <label class="custom-file-upload">
+                                <input type="file" id="csv-file-picker" accept=".csv" onchange="handleFileUpload()">
+                                📁 استيراد ملف بصمة
+                            </label>
+                            <button class="btn btn-secondary btn-sm" onclick="restoreDefaultLogs()">🔄 السجل الافتراضي</button>
+                        </div>
+
+                        <div class="action-buttons-group">
+                            <button class="btn btn-primary btn-block live-run-btn" id="start-simulation-btn" onclick="runLiveSimulation()">
+                                ▶️ بدء المحاكاة والمعالجة الحية للوكيل الذكي
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Real-time Live Agent Terminal Logs -->
+                    <div class="glass-card agent-terminal-card">
+                        <div class="card-header">
+                            <h2>📟 شاشة تفكير ومعالجة الوكيل الذكي (Live Agent Log)</h2>
+                            <span class="badge badge-warning" id="terminal-status">خامل</span>
+                        </div>
+                        <p class="card-subtitle">بث حي لخطوات الحسابات والتدقيق لكل موظف لحظة بلحظة.</p>
+                        <div class="agent-terminal" id="agent-terminal">
+                            <div class="log-line system">[نظام] الوكيل 'سند' جاهز لبدء معالجة الرواتب والتدقيق اللحظي...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exception Alarm Center & Intelligent Auditor -->
+                <div class="audit-alerts-grid" style="margin-top: 1.8rem;">
+                    <!-- Smart Exception Panel -->
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <h2>مركز رصد الانحرافات والتجاوزات الاستثنائية</h2>
+                            <span class="badge badge-warning" id="anomalies-count">0 تنبيهات</span>
+                        </div>
+                        <p class="card-subtitle">تصفية تلقائية للحالات الاستثنائية (تأخير حرج، إجازات مرضية مطولة).</p>
+                        <div class="alerts-container" id="anomalies-container">
+                            <div class="alert-item empty">لا توجد سجلات حضور معالجة بعد لتصفية الانحرافات.</div>
+                        </div>
+                    </div>
+
+                    <!-- Auditor Panel -->
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <h2>لجنة التدقيق المالي والمطابقة المستقلة (سند)</h2>
+                            <span class="badge badge-success" id="audit-badge">بانتظار التحقق</span>
+                        </div>
+                        <p class="card-subtitle">مطابقة ذكية للبيانات المحسوبة بمدخلات البصمة عبر Gemini.</p>
+                        <div class="audit-box-wrapper">
+                            <button class="btn btn-primary btn-block" id="run-audit-btn" onclick="runAuditCheck()" disabled>
+                                ⚖️ تشغيل صك الاعتماد النهائي للمدقق "سند"
+                            </button>
+                            <div class="audit-result-box" id="audit-result-box">
+                                تقرير المدقق المالي سيظهر هنا بالتفصيل فور تشغيل فحص المطابقة...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: Payroll Ledger & Mudad SIF File -->
+            <div class="tab-content" id="tab-payroll">
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2>مسير الرواتب المعتمد المبدئي (WPS Ready)</h2>
+                        <div class="header-actions-group">
+                            <button class="btn btn-secondary btn-sm" id="download-csv-btn" onclick="downloadCSV()" disabled>
+                                📥 تحميل CSV
+                            </button>
+                            <button class="btn btn-primary btn-sm" id="download-sif-btn" onclick="downloadSIF()" disabled>
+                                🏦 تصدير ملف مدد (SIF)
+                            </button>
+                        </div>
+                    </div>
+                    <div class="filter-bar">
+                        <input type="text" id="table-search-input" placeholder="🔍 ابحث باسم الموظف أو الرقم..." onkeyup="filterPayrollTable()" class="search-input">
+                        <select id="table-nat-filter" onchange="filterPayrollTable()" class="select-input-sm">
+                            <option value="ALL">جميع الجنسيات</option>
+                            <option value="Saudi">سعودي</option>
+                            <option value="Expat">مقيم</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table id="payroll-output-table">
+                            <thead>
+                                <tr>
+                                    <th>رقم الموظف</th>
+                                    <th>الاسم</th>
+                                    <th>الجنسية</th>
+                                    <th>الأساسي + السكن</th>
+                                    <th>العمولات</th>
+                                    <th>استقطاع GOSI</th>
+                                    <th>خصم التأخير</th>
+                                    <th>خصم المرضي</th>
+                                    <th>صافي الراتب</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="empty-state">
+                                    <td colspan="10">يرجى تشغيل المحاكاة المعالجة لبدء استيراد البيانات الحسابية...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: End of Service Gratuity (EOSG) Calculator -->
+            <div class="tab-content" id="tab-eosg">
+                <div class="grid-layout">
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <h2>⚖️ حاسبة مكافأة نهاية الخدمة (نظام العمل السعودي)</h2>
+                            <span class="badge">المواد 84 & 85</span>
+                        </div>
+                        <p class="card-subtitle">احتساب تلقائي دقيق لمكافأة نهاية الخدمة طبقاً للمادتين 84 و 85 من نظام العمل.</p>
+                        
+                        <form id="eosg-form" onsubmit="calculateEOSG(event)" class="eosg-form-grid">
+                            <div class="form-group">
+                                <label>الراتب الأساسي (ر.س):</label>
+                                <input type="number" id="eosg-basic" value="5000" required class="input-field">
+                            </div>
+                            <div class="form-group">
+                                <label>بدل السكن (ر.س):</label>
+                                <input type="number" id="eosg-housing" value="1250" required class="input-field">
+                            </div>
+                            <div class="form-group">
+                                <label>سنوات الخدمة الإجمالية:</label>
+                                <input type="number" step="0.5" id="eosg-years" value="6.5" required class="input-field">
+                            </div>
+                            <div class="form-group">
+                                <label>سبب انتهاء العلاقة التعاقدية:</label>
+                                <select id="eosg-reason" class="input-field">
+                                    <option value="termination">إنهاء عقد / انتهاء مدة العقد (استحقاق كامل)</option>
+                                    <option value="resignation">استقالة الموظف (طبقاً للمادة 85)</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">🧮 احتساب مكافأة نهاية الخدمة</button>
+                        </form>
+                    </div>
+
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <h2>📊 صك احتساب التصفية النهائية</h2>
+                            <span class="badge badge-success">نتيجة معتمدة</span>
+                        </div>
+                        <div id="eosg-result-card" class="eosg-result-box">
+                            <div class="eosg-empty">قم بإدخال البيانات واضغط على زر الاحتساب لعرض تفاصيل المستحقات.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: AI Copilot Chat Assistant -->
+            <div class="tab-content" id="tab-chat">
+                <div class="glass-card chat-card">
+                    <div class="card-header">
+                        <h2>💬 مستشار بالبيد الذكي للرواتب واللوائح (سند Copilot)</h2>
+                        <span class="badge badge-success">Gemini AI Engine</span>
+                    </div>
+                    <p class="card-subtitle">اسأل الوكيل "سند" أي سؤال حول رواتب الموظفين، الاستقطاعات، أو نظام العمل السعودي.</p>
+                    
+                    <div class="chat-messages-box" id="chat-messages-box">
+                        <div class="chat-msg agent">
+                            <div class="msg-avatar">🤖</div>
+                            <div class="msg-bubble">
+                                أهلاً بك! أنا <strong>"سند"</strong>، وكيل الموارد البشرية والرواتب لمجموعة بالبيد. كيف يمكنني مساعدتك اليوم في الاستفسار عن كشوف الرواتب أو لوائح التأمينات والعمل؟
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-row">
+                        <input type="text" id="chat-input" placeholder="اكتب سؤالك هنا (مثال: كم إجمالي رواتب السعوديين؟ أو ما هو حكم خصم التأخير؟)..." onkeydown="if(event.key==='Enter') sendChatMessage()" class="chat-input-field">
+                        <button class="btn btn-primary" onclick="sendChatMessage()">إرسال 🚀</button>
                     </div>
                 </div>
             </div>

@@ -6,10 +6,32 @@ const defaultLogs = `EmployeeID,Name,Nationality,BasicSalary,Housing,ShiftStart,
 105,Michael Smith,Expat,8000,2000,08:00,17:00,08:30,17:00,0,5,5`;
 
 let currentKpis = { gross: 0, gosi: 0, penalties: 0, net: 0 };
+let currentPayrollData = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     restoreDefaultLogs();
 });
+
+function switchTab(tabId) {
+    document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll(".nav-tab-btn").forEach(el => el.classList.remove("active"));
+
+    const targetTab = document.getElementById(tabId);
+    if (targetTab) targetTab.classList.add("active");
+
+    const targetBtn = document.querySelector(`.nav-tab-btn[data-tab="${tabId}"]`);
+    if (targetBtn) targetBtn.classList.add("active");
+
+    const pageTitles = {
+        "tab-simulation": "Balubied Payroll Agent — وكيل الرواتب والتدقيق اللحظي",
+        "tab-payroll": "كشوف مسير الرواتب المعتمدة (WPS & SIF Reports)",
+        "tab-eosg": "حاسبة مكافأة نهاية الخدمة والبدلات (KSA EOSG Calculator)",
+        "tab-chat": "مستشار بالبيد الذكي للرواتب (AI Agent Copilot Chat)"
+    };
+    if (pageTitles[tabId]) {
+        document.getElementById("page-title").innerText = pageTitles[tabId];
+    }
+}
 
 function restoreDefaultLogs() {
     document.getElementById("raw-csv-input").value = defaultLogs;
@@ -24,6 +46,7 @@ function restoreDefaultLogs() {
     
     // Clear downstream buttons & terminal
     document.getElementById("download-csv-btn").disabled = true;
+    document.getElementById("download-sif-btn").disabled = true;
     document.getElementById("run-audit-btn").disabled = true;
     document.getElementById("audit-result-box").innerText = "تقرير المدقق المالي سيظهر هنا بالتفصيل فور تشغيل فحص المطابقة...";
     document.getElementById("audit-result-box").classList.remove("active");
@@ -88,7 +111,6 @@ function generateSimulatedData() {
 
     let csvContent = "EmployeeID,Name,Nationality,BasicSalary,Housing,ShiftStart,ShiftEnd,CheckIn,CheckOut,SickDays,CashSales,TamweelSales\n";
     
-    // Generate 7-10 employees
     const count = 8;
     for (let i = 1; i <= count; i++) {
         const isSaudi = Math.random() > 0.35;
@@ -97,16 +119,13 @@ function generateSimulatedData() {
             ? `${saudiFirst[Math.floor(Math.random() * saudiFirst.length)]} ${saudiLast[Math.floor(Math.random() * saudiLast.length)]}`
             : expatNames[Math.floor(Math.random() * expatNames.length)];
         const nat = isSaudi ? "Saudi" : "Expat";
-        const basic = Math.floor(Math.random() * 40 + 35) * 100; // 3500-7500
+        const basic = Math.floor(Math.random() * 40 + 35) * 100;
         const housing = Math.floor(basic * 0.25);
         
-        // Late simulation
         const lateMinutes = Math.random() > 0.5 ? (Math.random() > 0.7 ? Math.floor(Math.random() * 70 + 20) : Math.floor(Math.random() * 15)) : 0;
-        const checkInHour = 8;
         const checkInMin = lateMinutes;
         const checkInStr = `08:${checkInMin < 10 ? '0' + checkInMin : checkInMin}`;
         
-        // Sick days
         const sickDays = Math.random() > 0.75 ? Math.floor(Math.random() * 40) : Math.floor(Math.random() * 5);
         const cashSales = Math.floor(Math.random() * 5);
         const tamweelSales = Math.floor(Math.random() * 6);
@@ -135,7 +154,7 @@ async function runLiveSimulation() {
     }
 
     const simBtn = document.getElementById("start-simulation-btn");
-    const speedMs = parseInt(document.getElementById("sim-speed").value || 500);
+    const speedMs = parseInt(document.getElementById("sim-speed").value || 400);
 
     simBtn.disabled = true;
     simBtn.innerText = "⚡ المحاكاة جارية لحظياً...";
@@ -156,7 +175,6 @@ async function runLiveSimulation() {
 
     appendTerminalLog("🚀 تفكيك السجل وبدء تدفق حساب المعالجة الحية...", "system");
 
-    // Call backend API first to retrieve processed payload
     const formData = new FormData();
     formData.append("raw_data", rawData);
 
@@ -172,6 +190,7 @@ async function runLiveSimulation() {
         }
 
         const employees = result.data;
+        currentPayrollData = employees;
         const total = employees.length;
 
         // Clear output table
@@ -180,7 +199,6 @@ async function runLiveSimulation() {
         
         resetKPIs();
         document.getElementById("anomalies-container").innerHTML = "";
-        let anomalyCount = 0;
 
         // Stream employees line by line!
         for (let i = 0; i < total; i++) {
@@ -194,11 +212,10 @@ async function runLiveSimulation() {
 
             // Terminal Thought Stream
             appendTerminalLog(
-                `👤 [${emp.EmployeeID}] ${emp.Name} | الراتب والبدل: ${emp.BasicPlusHousing} | GOSI: ${emp.GOSI_Deduction} | خصم التأخير: ${emp.Late_Penalty}`,
+                `👤 [${emp.EmployeeID}] ${emp.Name} | الأساسي والسكن: ${emp.BasicPlusHousing} | GOSI: ${emp.GOSI_Deduction} | خصم التأخير: ${emp.Late_Penalty}`,
                 "calc"
             );
 
-            // Check specific anomalies for terminal alert
             if (parseFloat(emp.Late_Penalty) > 0) {
                 appendTerminalLog(`⚠️ جزاء تأخير رُصد على ${emp.Name}: خصم ${emp.Late_Penalty} ر.س`, "alert");
             }
@@ -212,6 +229,9 @@ async function runLiveSimulation() {
             // Append row to HTML table with animation
             const tr = document.createElement("tr");
             tr.className = "row-entering";
+            tr.setAttribute("data-name", emp.Name.toLowerCase());
+            tr.setAttribute("data-id", emp.EmployeeID);
+            tr.setAttribute("data-nat", emp.Nationality);
             tr.innerHTML = `
                 <td><strong>${emp.EmployeeID}</strong></td>
                 <td>${emp.Name}</td>
@@ -229,7 +249,6 @@ async function runLiveSimulation() {
             // Accumulate KPIs live
             updateKpiLive(emp);
 
-            // Small dynamic delay for simulation speed
             await new Promise(r => setTimeout(r, speedMs));
         }
 
@@ -237,9 +256,10 @@ async function runLiveSimulation() {
         detectAnomalies(rawData);
 
         appendTerminalLog("✅ مكتمل! تم الانتهاء من حساب كافة السجلات ومطابقة التأمينات.", "system");
-        appendTerminalLog("⚖️ الوكيل 'سند' جاهز لإصدار صك الاعتماد القانوني والتنفيذي عبر Gemini.", "audit");
+        appendTerminalLog("⚖️ الوكيل 'سند' جاهز لإصدار صك الاعتماد القانوني عبر Gemini.", "audit");
 
         document.getElementById("download-csv-btn").disabled = false;
+        document.getElementById("download-sif-btn").disabled = false;
         document.getElementById("run-audit-btn").disabled = false;
         setAgentState("مكتمل", "تمت المعالجة - بانتظار التدقيق النهائي", "success");
 
@@ -391,6 +411,137 @@ async function runAuditCheck() {
 
 function downloadCSV() {
     window.open("/api/payroll/download", "_blank");
+}
+
+function downloadSIF() {
+    window.open("/api/payroll/download-sif", "_blank");
+}
+
+function filterPayrollTable() {
+    const search = document.getElementById("table-search-input").value.toLowerCase();
+    const natFilter = document.getElementById("table-nat-filter").value;
+    const rows = document.querySelectorAll("#payroll-output-table tbody tr");
+
+    rows.forEach(tr => {
+        const name = tr.getAttribute("data-name") || "";
+        const empId = tr.getAttribute("data-id") || "";
+        const nat = tr.getAttribute("data-nat") || "";
+
+        const matchesSearch = name.includes(search) || empId.includes(search);
+        const matchesNat = natFilter === "ALL" || nat === natFilter;
+
+        if (matchesSearch && matchesNat) {
+            tr.style.display = "";
+        } else {
+            tr.style.display = "none";
+        }
+    });
+}
+
+// EOSG CALCULATOR
+async function calculateEOSG(e) {
+    e.preventDefault();
+    const basic = parseFloat(document.getElementById("eosg-basic").value);
+    const housing = parseFloat(document.getElementById("eosg-housing").value);
+    const years = parseFloat(document.getElementById("eosg-years").value);
+    const reason = document.getElementById("eosg-reason").value;
+
+    const resCard = document.getElementById("eosg-result-card");
+    resCard.innerHTML = "⏳ جارٍ حساب المكافأة وفق نظام العمل السعودي...";
+
+    try {
+        const response = await fetch("/api/payroll/eosg", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                basic_salary: basic,
+                housing: housing,
+                years_of_service: years,
+                reason: reason
+            })
+        });
+
+        const res = await response.json();
+        if (response.ok && res.status === "success") {
+            const data = res.data;
+            resCard.innerHTML = `
+                <div class="eosg-result-grid">
+                    <div class="eosg-kpi-item">
+                        <label>الأجر الإجمالي الشهري</label>
+                        <strong>${data.total_wage.toLocaleString()} ر.س</strong>
+                    </div>
+                    <div class="eosg-kpi-item">
+                        <label>سنوات الخدمة المحسوبة</label>
+                        <strong>${data.years} سنة</strong>
+                    </div>
+                    <div class="eosg-kpi-item">
+                        <label>المستحق الأولي (المادة 84)</label>
+                        <strong>${data.base_eosg.toLocaleString()} ر.س</strong>
+                    </div>
+                    <div class="eosg-kpi-item">
+                        <label>نسبة الاستحقاق (المادة 85)</label>
+                        <strong>${data.payable_ratio}</strong>
+                    </div>
+                    <div class="eosg-kpi-item highlight-eosg" style="grid-column: span 2;">
+                        <label>صافي مكافأة نهاية الخدمة المستحقة</label>
+                        <strong style="font-size: 1.6rem;">${data.final_eosg.toLocaleString()} ر.س</strong>
+                    </div>
+                </div>
+            `;
+        } else {
+            resCard.innerHTML = "خطأ في حساب المكافأة.";
+        }
+    } catch (err) {
+        resCard.innerHTML = "فشل الاتصال بالخادم: " + err.message;
+    }
+}
+
+// AI COPILOT CHAT
+async function sendChatMessage() {
+    const input = document.getElementById("chat-input");
+    const msgText = input.value.trim();
+    if (!msgText) return;
+
+    const box = document.getElementById("chat-messages-box");
+
+    // Add user message
+    const userMsg = document.createElement("div");
+    userMsg.className = "chat-msg user";
+    userMsg.innerHTML = `
+        <div class="msg-avatar">👤</div>
+        <div class="msg-bubble">${msgText}</div>
+    `;
+    box.appendChild(userMsg);
+    input.value = "";
+    box.scrollTop = box.scrollHeight;
+
+    // Add agent loading placeholder
+    const agentMsg = document.createElement("div");
+    agentMsg.className = "chat-msg agent";
+    agentMsg.innerHTML = `
+        <div class="msg-avatar">🤖</div>
+        <div class="msg-bubble">⏳ يفكر 'سند' ويراجع كشوف الرواتب واللوائح...</div>
+    `;
+    box.appendChild(agentMsg);
+    box.scrollTop = box.scrollHeight;
+
+    try {
+        const response = await fetch("/api/payroll/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: msgText })
+        });
+
+        const res = await response.json();
+        if (response.ok && res.status === "success") {
+            agentMsg.querySelector(".msg-bubble").innerText = res.reply;
+        } else {
+            agentMsg.querySelector(".msg-bubble").innerText = "عذراً: " + (res.reply || "فشل الاتصال بالذكاء الاصطناعي");
+        }
+    } catch (err) {
+        agentMsg.querySelector(".msg-bubble").innerText = "خطأ في الشبكة: " + err.message;
+    }
+    box.scrollTop = box.scrollHeight;
 }
 
 function setStep(stepNum) {
