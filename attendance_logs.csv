@@ -1,9 +1,6 @@
-EmployeeID,Name,Nationality,BasicSalary,Housing,ShiftStart,ShiftEnd,CheckIn,CheckOut,SickDays,CashSales,TamweelSales
-201,خالد الشهري,Saudi,5600,1400,08:00,17:00,08:00,17:00,2,4,5
-202,ريم الغامدي,Saudi,4000,1000,08:00,17:00,08:09,17:00,0,4,4
-203,ريم الدوسري,Saudi,3500,875,08:00,17:00,08:05,17:00,2,0,5
-204,فيصل القحطاني,Saudi,6500,1625,08:00,17:00,08:06,17:00,4,3,0
-205,Carlos Rivera,Expat,6600,1650,08:00,17:00,08:00,17:00,0,1,2
-206,عمر الزهراني,Saudi,4700,1175,08:00,17:00,08:04,17:00,8,0,3
-207,فيصل السبيعي,Saudi,5800,1450,08:00,17:00,08:07,17:00,2,3,4
-208,Rajesh Kumar,Expat,3900,975,08:00,17:00,08:53,17:00,35,2,1
+EmployeeID,Name,Nationality,BasicSalary,Housing,ShiftStart,ShiftEnd,CheckIn,CheckOut,SickDays,CashSales,TamweelSales,OvertimeHours
+101,Ahmed Al-Ghamdi,Saudi,4000,1000,08:00,17:00,08:45,17:00,35,2,1,5
+102,John Doe,Expat,5000,1500,08:00,17:00,08:00,17:00,2,0,4,8
+103,Sara Al-Otaibi,Saudi,6000,1500,08:00,17:00,08:10,17:00,0,3,2,0
+104,Fahad Al-Zahrani,Saudi,3500,1000,08:00,17:00,10:00,17:00,0,1,0,2
+105,Michael Smith,Expat,8000,2000,08:00,17:00,08:30,17:00,0,5,5,12

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Balubied Payroll Agent - وكيل بالبيد لإدارة الرواتب والتدقيق الذكي</title>
+    <meta name="description" content="Balubied Payroll Agent — وكيل الرواتب الذكي لمجموعة بالبيد. منصة متكاملة لمعالجة الرواتب والتدقيق المالي المستقل.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -12,15 +13,22 @@
 <body>
     <div class="decor-glow-1"></div>
     <div class="decor-glow-2"></div>
-    
+
     <div class="container">
-        <!-- Sidebar Navigation & Guide -->
+        <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="logo-wrapper">
                 <img src="logo.png" alt="Balubaid Group Logo" class="balubaid-logo">
                 <span class="sub-logo">Balubied Payroll Agent</span>
             </div>
-            
+
+            <!-- Dark Mode Toggle -->
+            <div class="theme-toggle-wrapper">
+                <span class="theme-icon sun">☀️</span>
+                <button class="theme-toggle-switch" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode"></button>
+                <span class="theme-icon moon">🌙</span>
+            </div>
+
             <!-- Agent Status Card -->
             <div class="agent-status-card">
                 <div class="agent-avatar">
@@ -33,13 +41,16 @@
                 </div>
             </div>
 
-            <!-- Tab Navigation Menu -->
+            <!-- Tab Navigation -->
             <nav class="sidebar-nav">
                 <button class="nav-tab-btn active" data-tab="tab-simulation" onclick="switchTab('tab-simulation')">
                     <span class="nav-icon">⚡</span> المحاكاة والمعالجة الحية
                 </button>
                 <button class="nav-tab-btn" data-tab="tab-payroll" onclick="switchTab('tab-payroll')">
                     <span class="nav-icon">📑</span> مسير الرواتب و (Mudad SIF)
+                </button>
+                <button class="nav-tab-btn" data-tab="tab-analytics" onclick="switchTab('tab-analytics')">
+                    <span class="nav-icon">📊</span> لوحة التحليلات والبيانات
                 </button>
                 <button class="nav-tab-btn" data-tab="tab-eosg" onclick="switchTab('tab-eosg')">
                     <span class="nav-icon">⚖️</span> حاسبة نهاية الخدمة (EOSG)
@@ -49,7 +60,7 @@
                 </button>
             </nav>
 
-            <!-- Simulation Controls in Sidebar -->
+            <!-- Simulation Controls -->
             <div class="simulation-controls-box">
                 <h4>⚡ سرعة معالجة المحاكاة</h4>
                 <div class="control-group">
@@ -59,19 +70,27 @@
                         <option value="150">فائقة (0.15 ثانية / موظف)</option>
                     </select>
                 </div>
+                <div class="control-group">
+                    <select id="sim-count" class="select-input">
+                        <option value="8">8 موظفين</option>
+                        <option value="15" selected>15 موظف</option>
+                        <option value="25">25 موظف</option>
+                        <option value="40">40 موظف</option>
+                    </select>
+                </div>
                 <button class="btn btn-secondary btn-sm btn-block" onclick="generateSimulatedData()">
                     🎲 توليد بيانات موظفين جديدة
                 </button>
             </div>
-            
+
             <div class="footer-credit">
                 منصة الرواتب المستقلة © 2026 مجموعة بالبيد
             </div>
         </aside>
 
-        <!-- Main Dashboard Workspace -->
+        <!-- Main Dashboard -->
         <main class="main-content">
-            <!-- Header Banner -->
+            <!-- Header -->
             <header class="content-header">
                 <div class="header-main">
                     <div class="header-title-row">
@@ -84,7 +103,7 @@
                 </div>
             </header>
 
-            <!-- Smart KPI Panels (Always Visible) -->
+            <!-- KPI Cards -->
             <section class="kpi-section">
                 <div class="kpi-card">
                     <div class="kpi-icon gold">💰</div>
@@ -116,10 +135,10 @@
                 </div>
             </section>
 
-            <!-- Simulation Live Progress Bar -->
+            <!-- Progress Bar -->
             <section class="progress-section" id="progress-section" style="display: none;">
                 <div class="progress-info">
-                    <span id="progress-status">⚡ جاري تشغيل الوكيل الذكي ومقاطعة سجلات الموظفين...</span>
+                    <span id="progress-status">⚡ جاري تشغيل الوكيل الذكي...</span>
                     <strong id="progress-percent">0%</strong>
                 </div>
                 <div class="progress-bar-track">
@@ -127,18 +146,17 @@
                 </div>
             </section>
 
-            <!-- TAB 1: Simulation & Live Operations -->
+            <!-- TAB 1: Simulation -->
             <div class="tab-content active" id="tab-simulation">
                 <div class="grid-layout">
-                    <!-- Section 1: CSV Input & Controls -->
                     <div class="glass-card">
                         <div class="card-header">
                             <h2>بيانات سجل البصمة والحضور الفعلي</h2>
                             <span class="badge">CSV LOG</span>
                         </div>
-                        <p class="card-subtitle">سجل الحضور اليومي للموظفين المستخرج من أجهزة البصمة والدوام.</p>
+                        <p class="card-subtitle">سجل الحضور اليومي للموظفين المستخرج من أجهزة البصمة.</p>
                         <textarea id="raw-csv-input" placeholder="يرجى الانتظار لحين تحميل البيانات..."></textarea>
-                        
+
                         <div class="control-row">
                             <label class="custom-file-upload">
                                 <input type="file" id="csv-file-picker" accept=".csv" onchange="handleFileUpload()">
@@ -154,7 +172,6 @@
                         </div>
                     </div>
 
-                    <!-- Section 2: Real-time Live Agent Terminal Logs -->
                     <div class="glass-card agent-terminal-card">
                         <div class="card-header">
                             <h2>📟 شاشة تفكير ومعالجة الوكيل الذكي (Live Agent Log)</h2>
@@ -167,12 +184,11 @@
                     </div>
                 </div>
 
-                <!-- Exception Alarm Center & Intelligent Auditor -->
-                <div class="audit-alerts-grid" style="margin-top: 1.8rem;">
-                    <!-- Smart Exception Panel -->
+                <!-- Anomalies & Audit -->
+                <div class="audit-alerts-grid">
                     <div class="glass-card">
                         <div class="card-header">
-                            <h2>مركز رصد الانحرافات والتجاوزات الاستثنائية</h2>
+                            <h2>مركز رصد الانحرافات والتجاوزات</h2>
                             <span class="badge badge-warning" id="anomalies-count">0 تنبيهات</span>
                         </div>
                         <p class="card-subtitle">تصفية تلقائية للحالات الاستثنائية (تأخير حرج، إجازات مرضية مطولة).</p>
@@ -181,7 +197,6 @@
                         </div>
                     </div>
 
-                    <!-- Auditor Panel -->
                     <div class="glass-card">
                         <div class="card-header">
                             <h2>لجنة التدقيق المالي والمطابقة المستقلة (سند)</h2>
@@ -200,7 +215,7 @@
                 </div>
             </div>
 
-            <!-- TAB 2: Payroll Ledger & Mudad SIF File -->
+            <!-- TAB 2: Payroll Ledger -->
             <div class="tab-content" id="tab-payroll">
                 <div class="glass-card">
                     <div class="card-header">
@@ -226,29 +241,40 @@
                         <table id="payroll-output-table">
                             <thead>
                                 <tr>
-                                    <th>رقم الموظف</th>
-                                    <th>الاسم</th>
-                                    <th>الجنسية</th>
-                                    <th>الأساسي + السكن</th>
-                                    <th>العمولات</th>
-                                    <th>استقطاع GOSI</th>
-                                    <th>خصم التأخير</th>
-                                    <th>خصم المرضي</th>
-                                    <th>صافي الراتب</th>
+                                    <th onclick="sortTable(0)" data-col="0">رقم الموظف <span class="sort-arrow">▼</span></th>
+                                    <th onclick="sortTable(1)" data-col="1">الاسم <span class="sort-arrow">▼</span></th>
+                                    <th onclick="sortTable(2)" data-col="2">الجنسية <span class="sort-arrow">▼</span></th>
+                                    <th onclick="sortTable(3)" data-col="3">الأساسي + السكن <span class="sort-arrow">▼</span></th>
+                                    <th onclick="sortTable(4)" data-col="4">العمولات <span class="sort-arrow">▼</span></th>
+                                    <th onclick="sortTable(5)" data-col="5">استقطاع GOSI <span class="sort-arrow">▼</span></th>
+                                    <th onclick="sortTable(6)" data-col="6">خصم التأخير <span class="sort-arrow">▼</span></th>
+                                    <th onclick="sortTable(7)" data-col="7">خصم المرضي <span class="sort-arrow">▼</span></th>
+                                    <th onclick="sortTable(8)" data-col="8">صافي الراتب <span class="sort-arrow">▼</span></th>
                                     <th>الحالة</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr class="empty-state">
-                                    <td colspan="10">يرجى تشغيل المحاكاة المعالجة لبدء استيراد البيانات الحسابية...</td>
+                                    <td colspan="10">يرجى تشغيل المحاكاة والمعالجة لبدء استيراد البيانات الحسابية...</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+                    <div class="pagination-bar" id="pagination-bar"></div>
                 </div>
             </div>
 
-            <!-- TAB 3: End of Service Gratuity (EOSG) Calculator -->
+            <!-- TAB 3: Analytics Dashboard -->
+            <div class="tab-content" id="tab-analytics">
+                <div id="analytics-content">
+                    <div class="analytics-empty">
+                        <span class="empty-icon">📊</span>
+                        <p>قم بتشغيل المحاكاة والمعالجة الحية أولاً لعرض التحليلات والبيانات الإحصائية.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: EOSG Calculator -->
             <div class="tab-content" id="tab-eosg">
                 <div class="grid-layout">
                     <div class="glass-card">
@@ -257,7 +283,7 @@
                             <span class="badge">المواد 84 & 85</span>
                         </div>
                         <p class="card-subtitle">احتساب تلقائي دقيق لمكافأة نهاية الخدمة طبقاً للمادتين 84 و 85 من نظام العمل.</p>
-                        
+
                         <form id="eosg-form" onsubmit="calculateEOSG(event)" class="eosg-form-grid">
                             <div class="form-group">
                                 <label>الراتب الأساسي (ر.س):</label>
@@ -294,7 +320,7 @@
                 </div>
             </div>
 
-            <!-- TAB 4: AI Copilot Chat Assistant -->
+            <!-- TAB 5: AI Copilot Chat -->
             <div class="tab-content" id="tab-chat">
                 <div class="glass-card chat-card">
                     <div class="card-header">
@@ -302,7 +328,7 @@
                         <span class="badge badge-success">Gemini AI Engine</span>
                     </div>
                     <p class="card-subtitle">اسأل الوكيل "سند" أي سؤال حول رواتب الموظفين، الاستقطاعات، أو نظام العمل السعودي.</p>
-                    
+
                     <div class="chat-messages-box" id="chat-messages-box">
                         <div class="chat-msg agent">
                             <div class="msg-avatar">🤖</div>
@@ -320,6 +346,22 @@
             </div>
         </main>
     </div>
+
+    <!-- Employee Detail Modal -->
+    <div class="modal-overlay" id="employee-modal" onclick="closeModalOverlay(event)">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 تفاصيل الموظف</h2>
+                <button class="modal-close-btn" onclick="closeEmployeeModal()">✕</button>
+            </div>
+            <div id="modal-body">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
 
     <script src="app.js"></script>
 </body>

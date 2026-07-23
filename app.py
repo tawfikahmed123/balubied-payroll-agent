@@ -147,6 +147,7 @@ async def process_payroll(
             sick_days = int(emp.get("SickDays", 0))
             cash_sales = int(emp.get("CashSales", 0))
             tamweel_sales = int(emp.get("TamweelSales", 0))
+            overtime_hours = float(emp.get("OvertimeHours", 0))
 
             minutes_late = parse_minutes_late(shift_start, check_in)
 
@@ -160,7 +161,10 @@ async def process_payroll(
             
             late = calculate_late_penalty(minutes_late, daily_wage)
             sick = calculate_sick_leave_deduction(sick_days, daily_wage)
-            net_pay = (basic_plus_housing + commission) - (gosi_emp + late + sick)
+            
+            # Overtime: (Basic + Housing) / 240 hours * 1.5 rate per hour
+            overtime_pay = overtime_hours * (basic_plus_housing / 240.0) * 1.5
+            net_pay = (basic_plus_housing + commission + overtime_pay) - (gosi_emp + late + sick)
 
             results.append({
                 "EmployeeID": emp_id,
@@ -168,6 +172,8 @@ async def process_payroll(
                 "Nationality": nationality,
                 "BasicPlusHousing": f"{basic_plus_housing:.2f}",
                 "Commission": f"{commission:.2f}",
+                "OvertimeHours": f"{overtime_hours:.1f}",
+                "OvertimePay": f"{overtime_pay:.2f}",
                 "GOSI_Deduction": f"{gosi_emp:.2f}",
                 "GOSI_Employer": f"{gosi_employer:.2f}",
                 "Late_Penalty": f"{late:.2f}",
@@ -278,11 +284,13 @@ def download_sif():
         basic = round(basic_housing * 0.8, 2)
         housing = round(basic_housing * 0.2, 2)
         commission = float(emp["Commission"])
+        overtime_pay = float(emp.get("OvertimePay", 0))
+        allowance = commission + overtime_pay
         deductions = float(emp["GOSI_Deduction"]) + float(emp["Late_Penalty"]) + float(emp["Sick_Deduction"])
         net = float(emp["NetPay"])
         iban = f"SA{emp['EmployeeID']}000000000000000"
 
-        sif_lines.append(f"ED,{emp['EmployeeID']},{emp['Name']},{basic},{housing},{commission},{deductions},{net},{iban}\n")
+        sif_lines.append(f"ED,{emp['EmployeeID']},{emp['Name']},{basic},{housing},{allowance},{deductions},{net},{iban}\n")
 
     content = "".join(sif_lines)
     return Response(content=content, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=mudad_wps_salary_file.sif"})
