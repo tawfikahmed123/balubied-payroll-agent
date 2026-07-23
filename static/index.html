@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Balubied Payroll Agent - وكيل بالبيد لإدارة الرواتب</title>
+    <title>Balubied Payroll Agent - وكيل بالبيد لإدارة الرواتب والتدقيق الذكي</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
@@ -18,39 +18,67 @@
         <aside class="sidebar">
             <div class="logo-wrapper">
                 <img src="logo.png" alt="Balubaid Group Logo" class="balubaid-logo">
-                <span class="sub-logo">إدارة الرواتب والبصمة</span>
+                <span class="sub-logo">Balubied Payroll Agent</span>
             </div>
             
+            <!-- Agent Status Card -->
+            <div class="agent-status-card">
+                <div class="agent-avatar">
+                    <span class="avatar-icon">🤖</span>
+                    <span class="pulse-dot active" id="agent-pulse"></span>
+                </div>
+                <div class="agent-meta">
+                    <strong id="agent-name">الوكيل الذكي: سند</strong>
+                    <span class="agent-state" id="agent-state-label">جاهز للعمل المباشر</span>
+                </div>
+            </div>
+
             <!-- Timeline Process -->
             <div class="guide-panel">
-                <h3>🛠️ مسار المعالجة التلقائية</h3>
+                <h3>🛠️ مسار معالجة الوكيل</h3>
                 <div class="steps-flow">
                     <div class="step-card active" id="step-1-card">
                         <div class="step-num">1</div>
                         <div class="step-desc">
-                            <strong>استيراد سجل البصمة</strong>
-                            <span>رفع البيانات أو تعديلها يدوياً.</span>
+                            <strong>استيراد ومحاكاة البيانات</strong>
+                            <span>توليد أو رفع بيانات البصمة.</span>
                         </div>
                     </div>
                     <div class="step-card" id="step-2-card">
                         <div class="step-num">2</div>
                         <div class="step-desc">
-                            <strong>المعالجة والاحتساب</strong>
-                            <span>حساب ساعات التأخير، المرضي، والعمولات.</span>
+                            <strong>المعالجة التفاعلية المباشرة</strong>
+                            <span>حساب الرواتب والخصومات لحظياً.</span>
                         </div>
                     </div>
                     <div class="step-card" id="step-3-card">
                         <div class="step-num">3</div>
                         <div class="step-desc">
-                            <strong>التدقيق والاعتماد</strong>
-                            <span>المطابقة القانونية عبر الوكيل "سند".</span>
+                            <strong>التدقيق الذكي والاعتماد</strong>
+                            <span>المطابقة القانونية عبر "سند".</span>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Simulation Controls in Sidebar -->
+            <div class="simulation-controls-box">
+                <h4>⚡ إعدادات المحاكاة الحية</h4>
+                <div class="control-group">
+                    <label>سرعة المعالجة الحية:</label>
+                    <select id="sim-speed" class="select-input">
+                        <option value="1000">عادية (1 ثانية / موظف)</option>
+                        <option value="500" selected>سريعة (0.5 ثانية / موظف)</option>
+                        <option value="200">فائقة (0.2 ثانية / موظف)</option>
+                    </select>
+                </div>
+                <button class="btn btn-secondary btn-sm btn-block" onclick="generateSimulatedData()">
+                    🎲 توليد بيانات موظفين جديدة
+                </button>
+            </div>
             
             <div class="footer-credit">
-                منصة تدقيق الرواتب المستقلة © 2026
+                منصة تدقيق الرواتب والذكاء الاصطناعي © 2026
             </div>
         </aside>
 
@@ -59,10 +87,26 @@
             <!-- Header Banner -->
             <header class="content-header">
                 <div class="header-main">
-                    <h1>Balubied Payroll Agent — وكيل بالبيد للرواتب والتدقيق</h1>
-                    <p>معالجة تلقائية بالكامل لسجلات البصمة ومطابقة الرواتب والعمولات متوافقة مع التأمينات الاجتماعية ونظام العمل السعودي.</p>
+                    <div class="header-title-row">
+                        <h1>Balubied Payroll Agent — وكيل الرواتب والتدقيق اللحظي</h1>
+                        <span class="live-badge" id="live-indicator">
+                            <span class="pulse-dot green"></span> محاكاة حية
+                        </span>
+                    </div>
+                    <p>معالجة تفاعلية حية لسجلات البصمة وحساب التأمينات والعمولات والخصومات بمطابقة فورية مع نظام العمل السعودي.</p>
                 </div>
             </header>
+
+            <!-- Simulation Live Progress Bar -->
+            <section class="progress-section" id="progress-section" style="display: none;">
+                <div class="progress-info">
+                    <span id="progress-status">⚡ جاري تشغيل الوكيل الذكي ومقاطعة سجلات الموظفين...</span>
+                    <strong id="progress-percent">0%</strong>
+                </div>
+                <div class="progress-bar-track">
+                    <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%;"></div>
+                </div>
+            </section>
 
             <!-- Smart KPI Panels -->
             <section class="kpi-section">
@@ -96,61 +140,76 @@
                 </div>
             </section>
 
-            <!-- Main Interactive Data Cards -->
+            <!-- Main Interactive Data Cards Grid -->
             <div class="grid-layout">
-                <!-- Section 1: Raw Input Logs -->
+                <!-- Section 1: CSV Input & Controls -->
                 <div class="glass-card">
                     <div class="card-header">
                         <h2>بيانات سجل البصمة والحضور الفعلي</h2>
                         <span class="badge">CSV LOG</span>
                     </div>
-                    <p class="card-subtitle">البيانات الفردية الخام المستخرجة مباشرة من أجهزة الحضور والانصراف.</p>
+                    <p class="card-subtitle">البيانات الفردية الخام المستخرجة من أجهزة الحضور وانصراف الموظفين.</p>
                     <textarea id="raw-csv-input" placeholder="يرجى الانتظار لحين تحميل البيانات..."></textarea>
                     
                     <div class="control-row">
                         <label class="custom-file-upload">
                             <input type="file" id="csv-file-picker" accept=".csv" onchange="handleFileUpload()">
-                            📁 استيراد ملف البصمة
+                            📁 استيراد ملف بصمة
                         </label>
-                        <button class="btn btn-secondary btn-sm" onclick="restoreDefaultLogs()">🔄 إعادة السجل الافتراضي</button>
+                        <button class="btn btn-secondary btn-sm" onclick="restoreDefaultLogs()">🔄 السجل الافتراضي</button>
                     </div>
 
-                    <button class="btn btn-primary btn-block" id="process-payroll-btn" onclick="runPayrollCalculation()">
-                        ⚙️ بدء معالجة السجلات وتصدير الكشوف
-                    </button>
-                </div>
-
-                <!-- Section 2: WPS Mudad Final List -->
-                <div class="glass-card">
-                    <div class="card-header">
-                        <h2>مسير الرواتب المعتمد المبدئي (WPS Ready)</h2>
-                        <button class="btn btn-secondary btn-sm" id="download-csv-btn" onclick="downloadCSV()" disabled>
-                            📥 تحميل مسير مدد
+                    <div class="action-buttons-group">
+                        <button class="btn btn-primary btn-block live-run-btn" id="start-simulation-btn" onclick="runLiveSimulation()">
+                            ▶️ بدء المحاكاة والمعالجة الحية للوكيل الذكي
                         </button>
                     </div>
-                    <p class="card-subtitle">تفاصيل الحسابات النهائية بعد تسوية الخصومات والعمولات.</p>
-                    <div class="table-container">
-                        <table id="payroll-output-table">
-                            <thead>
-                                <tr>
-                                    <th>رقم الموظف</th>
-                                    <th>الاسم</th>
-                                    <th>الجنسية</th>
-                                    <th>الأساسي + السكن</th>
-                                    <th>العمولات المكتسبة</th>
-                                    <th>استقطاع GOSI</th>
-                                    <th>خصم التأخير</th>
-                                    <th>خصم المرضي</th>
-                                    <th>صافي الراتب</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="empty-state">
-                                    <td colspan="9">يرجى الضغط على زر المعالجة لبدء استيراد البيانات الحسابية...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                </div>
+
+                <!-- Section 2: Real-time Live Agent Terminal Logs -->
+                <div class="glass-card agent-terminal-card">
+                    <div class="card-header">
+                        <h2>📟 شاشة تفكير ومعالجة الوكيل الذكي (Live Agent Log)</h2>
+                        <span class="badge badge-warning" id="terminal-status">خامل</span>
                     </div>
+                    <p class="card-subtitle">بث حي لخطوات التحليل الرياضي والتدقيق القانوني لكل موظف لحظة بلحظة.</p>
+                    <div class="agent-terminal" id="agent-terminal">
+                        <div class="log-line system">[نظام] الوكيل 'سند' جاهز لبدء معالجة الرواتب والتدقيق اللحظي...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WPS Table Ready -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <h2>مسير الرواتب المعتمد اللحظي (WPS Ready)</h2>
+                    <button class="btn btn-secondary btn-sm" id="download-csv-btn" onclick="downloadCSV()" disabled>
+                        📥 تحميل مسير مدد CSV
+                    </button>
+                </div>
+                <p class="card-subtitle">كشف الرواتب التفاعلي — يتم تحديث السجلات لحظياً أثناء معالجة الوكيل الذكي.</p>
+                <div class="table-container">
+                    <table id="payroll-output-table">
+                        <thead>
+                            <tr>
+                                <th>رقم الموظف</th>
+                                <th>الاسم</th>
+                                <th>الجنسية</th>
+                                <th>الأساسي + السكن</th>
+                                <th>العمولات المكتسبة</th>
+                                <th>استقطاع GOSI</th>
+                                <th>خصم التأخير</th>
+                                <th>خصم المرضي</th>
+                                <th>صافي الراتب</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="empty-state">
+                                <td colspan="10">يرجى الضغط على زر بدء المحاكاة والمعالجة الحية لبدء تدفق الموظفين...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -174,10 +233,10 @@
                         <h2>لجنة التدقيق المالي والمطابقة المستقلة (سند)</h2>
                         <span class="badge badge-success" id="audit-badge">بانتظار التحقق</span>
                     </div>
-                    <p class="card-subtitle">مطابقة ذكية للبيانات المحسوبة بمدخلات البصمة طبقاً للوائح العمل السعودية.</p>
+                    <p class="card-subtitle">مطابقة ذكية للبيانات المحسوبة بمدخلات البصمة طبقاً للوائح العمل السعودية عبر Gemini.</p>
                     <div class="audit-box-wrapper">
                         <button class="btn btn-primary btn-block" id="run-audit-btn" onclick="runAuditCheck()" disabled>
-                            ⚖️ تشغيل المدقق المالي المستقل "سند"
+                            ⚖️ تشغيل صك الاعتماد النهائي للمدقق "سند"
                         </button>
                         <div class="audit-result-box" id="audit-result-box">
                             تقرير المدقق المالي سيظهر هنا بالتفصيل فور تشغيل فحص المطابقة...
